@@ -1,17 +1,25 @@
 const multer = require('multer');
-const path = require('path');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('cloudinary').v2;
+require('dotenv').config();
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/'); // File disimpan di folder uploads/
-  },
-  filename: function (req, file, cb) {
-    // Menamai file: timestamp + ekstensi asli (contoh: 16987654321-foto.jpg)
-    cb(null, Date.now() + path.extname(file.originalname));
+// Konfigurasi Cloudinary dengan data dari .env
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+// Setup penyimpanan Multer ke Cloudinary
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'kriyagaleri_uploads', // Nama folder yang akan otomatis dibuat di Cloudinary
+    resource_type: 'auto', // PENTING: 'auto' agar bisa menerima gambar dan audio sekaligus
+    allowed_formats: ['jpg', 'jpeg', 'png', 'mp3', 'wav', 'm4a']
   }
 });
 
-// Terima segala jenis file untuk sementara (foto dan audio)
 const upload = multer({ storage: storage });
 
 module.exports = upload;

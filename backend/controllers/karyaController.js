@@ -1,6 +1,4 @@
 const pool = require('../config/db');
-const fs = require('fs'); 
-const path = require('path');
 
 const uploadKarya = async (req, res) => {
   const { userId, judul, visibilitas, steps } = req.body; 
@@ -131,29 +129,35 @@ const getDetailKarya = async (req, res) => {
   const readerId = req.user.id; 
 
   try {
-    // 1. Cari tahu banjar si pembaca
     const readerResult = await pool.query('SELECT asal_banjar FROM users WHERE id = $1', [readerId]);
     const readerBanjar = readerResult.rows[0].asal_banjar;
 
-    // 2. Ambil info karya sekaligus cek hak aksesnya
+    // Tambahkan u.no_wa di bagian SELECT
     const karyaInfo = await pool.query(`
-      SELECT k.*, u.nama AS seniman, u.asal_banjar 
+      SELECT k.*, u.nama AS seniman, u.asal_banjar, u.no_wa 
       FROM karya k 
       JOIN users u ON k.user_id = u.id 
       WHERE k.id = $1
         AND (k.visibilitas = 'publik' OR (k.visibilitas = 'banjar' AND u.asal_banjar = $2))
     `, [id, readerBanjar]);
 
-    // Jika kosong, berarti karya tidak ada ATAU dia tidak punya akses (beda banjar)
     if (karyaInfo.rows.length === 0) {
       return res.status(403).json({ message: "Karya tidak ditemukan atau Anda tidak memiliki akses" });
     }
 
-    // 3. Ambil langkah-langkahnya
+    let detail = karyaInfo.rows[0];
+
+    // Sisipkan Trik WhatsApp di sini
+    let wa_format = detail.no_wa;
+    if (wa_format && wa_format.startsWith('0')) {
+      wa_format = '62' + wa_format.substring(1);
+    }
+    detail.no_wa_whatsapp = wa_format;
+
     const steps = await pool.query('SELECT * FROM karya_steps WHERE karya_id = $1 ORDER BY step_number ASC', [id]);
 
     res.status(200).json({
-      detail: karyaInfo.rows[0],
+      detail: detail,
       steps: steps.rows
     });
 
@@ -165,34 +169,32 @@ const getDetailKarya = async (req, res) => {
 
 const deleteKarya = async (req, res) => {
   const { id } = req.params;
+  const cloudinary = require('cloudinary').v2; // Panggil cloudinary
 
   try {
-    // 1. Cari dulu file foto dan audio yang menempel di karya ini
     const steps = await pool.query('SELECT foto_url, audio_url FROM karya_steps WHERE karya_id = $1', [id]);
 
-    // 2. Hapus file-file tersebut dari folder lokal komputer/server
-    steps.rows.forEach(step => {
+    // Hapus file dari Cloudinary
+    for (const step of steps.rows) {
       if (step.foto_url) {
-        // Gabungkan path agar akurat mengarah ke root/uploads
-        const fotoPath = path.join(__dirname, '..', step.foto_url); 
-        if (fs.existsSync(fotoPath)) fs.unlinkSync(fotoPath); // Eksekusi hapus file
+        // Ambil ID file dari URL Cloudinary
+        const publicId = 'kriyagaleri_uploads/' + step.foto_url.split('/').pop().split('.')[0];
+        await cloudinary.uploader.destroy(publicId);
       }
       if (step.audio_url) {
-        const audioPath = path.join(__dirname, '..', step.audio_url);
-        if (fs.existsSync(audioPath)) fs.unlinkSync(audioPath); // Eksekusi hapus file
+        const publicId = 'kriyagaleri_uploads/' + step.audio_url.split('/').pop().split('.')[0];
+        await cloudinary.uploader.destroy(publicId, { resource_type: 'video' }); // audio di cloudinary masuk kategori video
       }
-    });
+    }
 
-    // 3. Hapus datanya dari Database
-    // Catatan: Karena di tabel karya_steps kita pasang "ON DELETE CASCADE", 
-    // kita cukup hapus ID di tabel 'karya', otomatis data di 'karya_steps' ikut lenyap!
+    // Hapus data dari database
     const deleteResult = await pool.query('DELETE FROM karya WHERE id = $1 RETURNING id', [id]);
 
     if (deleteResult.rowCount === 0) {
       return res.status(404).json({ message: "Karya tidak ditemukan" });
     }
 
-    res.status(200).json({ message: "Karya beserta file fotonya berhasil dihapus total!" });
+    res.status(200).json({ message: "Karya dan file di Cloudinary berhasil dihapus!" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Gagal menghapus karya" });
