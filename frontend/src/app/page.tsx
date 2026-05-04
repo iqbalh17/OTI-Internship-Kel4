@@ -42,7 +42,7 @@ export default function Home() {
           </Link>
         </div>
 
-        <p className={`${poppins.className}  text-xs text-center text-neutral-900 `}>
+        <p className={`${poppins.className}  italic text-xs text-center text-neutral-900 `}>
           "Melestarikan Warisan, Menginspirasi Masa Depan."
         </p>
 
