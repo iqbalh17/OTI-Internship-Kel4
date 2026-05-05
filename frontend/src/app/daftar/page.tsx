@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import DropdownBanjar from './DropdownBanjar' 
+import { useRouter } from 'next/navigation'
 import { Poppins } from 'next/font/google'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -12,6 +13,7 @@ const poppins = Poppins({
 })
 
 export default function DaftarAkun() {
+  const router = useRouter()
   const [showDropdown, setShowDropdown] = useState(false)
   const [selectedBanjar, setSelectedBanjar] = useState('')
 
@@ -75,7 +77,7 @@ export default function DaftarAkun() {
 
         </div>
 
-        <button className="w-full bg-[#C04000] text-white font-bold py-4 rounded-full mt-8 shadow-xl">
+        <button onClick={() => router.push('/beranda')} className="w-full bg-[#C04000] text-white font-bold py-4 rounded-full mt-8">
           Daftar Akun
         </button>
 
