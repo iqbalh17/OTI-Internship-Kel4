@@ -32,7 +32,7 @@ export default function DaftarAkun() {
               <input
                 type="tel"
                 placeholder="Masukkan no. HP... (cth. 081314442555)"
-                className="bg-transparent text-sm outline-none w-full text-gray-400"
+                className="bg-transparent text-sm outline-none w-full text-black"
               />
             </div>
           </div>
@@ -44,7 +44,7 @@ export default function DaftarAkun() {
               <input
                 type="text"
                 placeholder="Masukkan nama lengkap..."
-                className="bg-transparent text-sm outline-none w-full text-gray-400"
+                className="bg-transparent text-sm outline-none w-full text-black"
               />
             </div>
           </div>
@@ -56,7 +56,7 @@ export default function DaftarAkun() {
               <input
                 type="text"
                 placeholder="Pilih Asal Banjar..."
-                className="bg-transparent text-sm outline-none w-full text-gray-400"
+                className="bg-transparent text-sm outline-none w-full text-black"
               />
               <Image src="/down.webp" alt="dropdown" width={24} height={24} />
             </div>
@@ -69,7 +69,7 @@ export default function DaftarAkun() {
               <input
                 type="password"
                 placeholder="Masukkan password..."
-                className="bg-transparent text-sm outline-none w-full text-gray-400"
+                className="bg-transparent text-sm outline-none w-full text-black"
               />
               <Image src="/eye.webp" alt="eye" width={24} height={24} className="cursor-pointer" />
             </div>

@@ -26,7 +26,7 @@ export default function Masuk() {
             <input
               type="tel"
               placeholder="Masukkan no. HP... (cth. 081314442555)"
-              className="bg-transparent text-sm outline-none w-full text-gray-400"
+              className="bg-transparent text-sm outline-none w-full text-black"
             />
           </div>
         </div>
@@ -38,7 +38,7 @@ export default function Masuk() {
             <input
               type="password"
               placeholder="Masukkan password..."
-              className="bg-transparent text-sm outline-none w-full text-gray-400"
+              className="bg-transparent text-sm outline-none w-full text-black"
             />
             <Image src="/eye.webp" alt="eye" width={24} height={24} className="cursor-pointer" />
           </div>

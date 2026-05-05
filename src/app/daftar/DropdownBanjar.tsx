@@ -22,7 +22,7 @@ export default function DropdownBanjar({ selected, onSelect, onConfirm }: Props)
       <div className="w-[360px] bg-white rounded-t-3xl px-6 py-5 flex flex-col gap-3 cursor-pointer border-2 border-[#C04000CC]">
 
         <div className="mb-1">
-          <p className="font-bold text-base">Pilih Asal Banjar</p>
+          <p className="font-bold text-base text-black">Pilih Asal Banjar</p>
           <p className="text-sm text-gray-500">Silahkan pilih lokasi banjar tempat tinggal atau workshop Anda.</p>
         </div>
 
