@@ -77,27 +77,26 @@ export default function Beranda() {
         ) : (
           <div className="px-5 grid grid-cols-2 gap-3">
             {produkFiltered.map((item) => (
-              <div
-                key={item.id}
-                className="bg-white rounded-2xl overflow-hidden shadow-xl cursor-pointer active:scale-95 transition-transform"
-              >
+            <Link href={`/beranda/${item.id}`} key={item.id}>  {/* ← wrap di sini */}
+                <div className="bg-white rounded-2xl overflow-hidden shadow-xl cursor-pointer active:scale-95 transition-transform">
                 <Image
-                  src={item.img}
-                  alt={item.nama}
-                  width={180}
-                  height={160}
-                  className="w-full h-40 object-cover"
+                    src={item.img}
+                    alt={item.nama}
+                    width={180}
+                    height={160}
+                    className="w-full h-40 object-cover"
                 />
                 <div className="p-3 flex flex-col gap-1">
-                  <p className="text-[10px] font-bold text-[#C04000]">{item.kategori}</p>
-                  <p className="text-sm font-bold">{item.nama}</p>
-                  <p className="text-xs text-[#C04000]">oleh {item.oleh}</p>
-                  <div className="flex items-center gap-1 mt-1 bg-[#FFF0E8] rounded-full px-2 py-1 w-fit border border-[#C04000CC]">
+                    <p className="text-[10px] font-bold text-[#C04000]">{item.kategori}</p>
+                    <p className="text-sm font-bold">{item.nama}</p>
+                    <p className="text-xs text-[#C04000]">oleh {item.oleh}</p>
+                    <div className="flex items-center gap-1 mt-1 bg-[#FFF0E8] rounded-full px-2 py-1 w-fit border border-[#C04000CC]">
                     <Image src="/red-map.webp" alt="map" width={12} height={12} />
                     <p className="text-[10px] text-[#C04000]">{item.banjar}</p>
-                  </div>
+                    </div>
                 </div>
-              </div>
+                </div>
+            </Link>
             ))}
           </div>
         )}
