@@ -1,3 +1,7 @@
+'use client'
+
+import { useState } from 'react'
+import DropdownBanjar from './DropdownBanjar' 
 import { Poppins } from 'next/font/google'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -8,8 +12,11 @@ const poppins = Poppins({
 })
 
 export default function DaftarAkun() {
+  const [showDropdown, setShowDropdown] = useState(false)
+  const [selectedBanjar, setSelectedBanjar] = useState('')
+
   return (
-    <div className="min-h-screen bg-[#FFF7E4] flex justify-center">
+    <div className="relative min-h-screen bg-[#FFF7E4] flex justify-center">
       <div className={poppins.className + " w-[360px] min-h-screen flex flex-col justify-end px-9 pb-[146px]"}>
 
         <h1 className="text-3xl font-bold text-[#C04000] mb-5">Daftar Akun</h1>
@@ -40,7 +47,7 @@ export default function DaftarAkun() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-1">
+          <div onClick={() => setShowDropdown(true)} className="flex flex-col gap-1">
             <label className="text-sm">Asal Banjar</label>
             <div className="flex items-center gap-3 bg-white rounded-2xl px-4 py-3 shadow-xl">
               <Image src="/map.webp" alt="location" width={24} height={24} />
@@ -80,6 +87,13 @@ export default function DaftarAkun() {
         </p>
 
       </div>
+      {showDropdown && (
+      <DropdownBanjar
+        selected={selectedBanjar}
+        onSelect={setSelectedBanjar}
+        onConfirm={() => setShowDropdown(false)}
+      />
+    )}
     </div>
   )
 }
