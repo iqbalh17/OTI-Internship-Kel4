@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { Poppins } from 'next/font/google'
 import Image from 'next/image'
 import Link from 'next/link'
+import { fetchApi } from '../../../utils/api'
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -17,11 +18,37 @@ export default function DetailKarya() {
   const [data, setData] = useState<any>(null)
 
   useEffect(() => {
-    const saved = localStorage.getItem('produk')
-    if (saved) {
-      const list = JSON.parse(saved)
-      const found = list.find((p: any) => p.id === Number(karya))
-      setData(found)
+    const getDetailKarya = async () => {
+      try {
+        const response = await fetchApi(`/karya/detail/${karya}`, 'GET')
+        
+        const detail = response.detail
+        const steps = response.steps || []
+
+        if (!detail) return
+
+        const formattedData = {
+          id: detail.id,
+          nama: detail.judul,
+          oleh: detail.seniman,
+          banjar: detail.asal_banjar,
+          whatsapp: detail.no_wa_whatsapp || detail.no_wa,
+          langkah: steps.map((s: any) => ({
+            img: s.foto_url,
+            deskripsi: s.keterangan_teks,
+            step_number: s.step_number,
+            audio: s.audio_url
+          }))
+        }
+
+        setData(formattedData)
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    if (karya) {
+      getDetailKarya()
     }
   }, [karya])
 
@@ -31,7 +58,6 @@ export default function DetailKarya() {
     <div className="min-h-screen bg-[#FFF7E4] flex justify-center">
       <div className={poppins.className + " w-[360px] min-h-screen flex flex-col pb-24"}>
 
-        {/* Tombol Kembali */}
         <div className="px-5 pt-8 pb-4">
           <button
             onClick={() => router.back()}
@@ -41,13 +67,11 @@ export default function DetailKarya() {
           </button>
         </div>
 
-        {/* Judul */}
         <div className="px-5 mb-3">
           <h1 className="text-2xl font-bold text-[#C04000]">{data.nama}</h1>
           <p className="text-sm text-gray-500 mt-1">Karya Oleh</p>
         </div>
 
-        {/* Info Pembuat */}
         <div className="mx-5 bg-white rounded-2xl px-4 py-3 flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden shrink-0">
             <Image src="/placeholder.webp" alt="avatar" width={40} height={40} className="object-cover" />
@@ -61,11 +85,10 @@ export default function DetailKarya() {
           </div>
         </div>
 
-        {/* Langkah-langkah */}
         {data.langkah && data.langkah.length > 0 && (
           <div className="px-5 flex flex-col gap-4 mb-4">
             {data.langkah.map((l: any, i: number) => (
-              <div key={i} className="bg-white rounded-2xl overflow-hidden">
+              <div key={i} className="bg-white rounded-2xl overflow-hidden shadow-sm">
                 {l.img && (
                   <Image
                     src={l.img}
@@ -77,32 +100,42 @@ export default function DetailKarya() {
                 )}
                 <div className="p-3">
                   <span className="text-xs border border-[#C04000] text-[#C04000] rounded-full px-3 py-1">
-                    Langkah {i + 1}
+                    Langkah {l.step_number || i + 1}
                   </span>
-                  <p className="text-sm text-gray-700 mt-2">{l.deskripsi}</p>
+                  
+                  {l.deskripsi ? (
+                    <p className="text-sm text-gray-700 mt-2">{l.deskripsi}</p>
+                  ) : l.audio ? (
+                    <div className="mt-3 bg-gray-50 p-2 rounded-xl border border-gray-100">
+                      <audio controls className="w-full h-8">
+                        <source src={l.audio} type="audio/mpeg" />
+                      </audio>
+                      <p className="text-[10px] text-gray-400 mt-1 text-center">Putar Voice Note</p>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-400 mt-2 italic">Tidak ada keterangan.</p>
+                  )}
                 </div>
               </div>
             ))}
           </div>
         )}
 
-        {/* Tombol WhatsApp */}
         {data.whatsapp && (
-        <div className="px-5 mb-4">
+          <div className="px-5 mb-4">
             <Link
-            href={`https://wa.me/${data.whatsapp}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full bg-[#C04000] text-white font-bold py-4 rounded-full flex items-center justify-center gap-2"
+              href={`https://wa.me/${data.whatsapp}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full bg-[#C04000] text-white font-bold py-4 rounded-full flex items-center justify-center gap-2"
             >
-            <Image src="/phone.webp" alt="wa" width={20} height={20} />
-            Lanjutkan Diskusi Lewat WhatsApp
+              <Image src="/phone.webp" alt="wa" width={20} height={20} />
+              Lanjutkan Diskusi Lewat WhatsApp
             </Link>
-        </div>
+          </div>
         )}
 
-        {/* Bottom Navbar */}
-        <div className="fixed bottom-0 left-0 right-0 bg-[#C04000] flex justify-around items-center py-3">
+        <div className="fixed bottom-0 left-0 right-0 bg-[#C04000] flex justify-around items-center py-3 z-50">
           <Link href="/beranda" className="flex flex-col items-center gap-1">
             <Image src="/home.webp" alt="home" width={24} height={24} />
             <p className="text-white text-[10px]">Beranda</p>

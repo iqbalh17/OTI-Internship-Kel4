@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Poppins } from 'next/font/google'
 import Image from 'next/image'
 import Link from 'next/link'
+import { fetchApi } from '../../utils/api'
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -24,24 +25,39 @@ export default function Beranda() {
   const [showTutorial, setShowTutorial] = useState(false)
 
   useEffect(() => {
-    const saved = localStorage.getItem('produk')
-    if (saved) {
-      setProduk(JSON.parse(saved))
-    } else {
-      const defaultData = [
-        { id: 1, kategori: 'KAYU', nama: 'Topeng Barong', oleh: 'I Made Widiarta', banjar: 'Nama Banjar #1', img: '/placeholder.webp', langkah: [], whatsapp: '' },
-        { id: 2, kategori: 'KAYU', nama: 'Topeng Barong', oleh: 'I Made Widiarta', banjar: 'Nama Banjar #1', img: '/placeholder.webp', langkah: [], whatsapp: '' },
-        { id: 3, kategori: 'KAYU', nama: 'Topeng Barong', oleh: 'I Made Widiarta', banjar: 'Nama Banjar #1', img: '/placeholder.webp', langkah: [], whatsapp: '' },
-        { id: 4, kategori: 'KAYU', nama: 'Topeng Barong', oleh: 'I Made Widiarta', banjar: 'Nama Banjar #1', img: '/placeholder.webp', langkah: [], whatsapp: '' },
-      ]
-      localStorage.setItem('produk', JSON.stringify(defaultData))
-      setProduk(defaultData)
+    const getKarya = async () => {
+      try {
+        const response = await fetchApi('/karya/beranda', 'GET')
+        
+        const rawData = response.data || response || []
+        
+        if (!Array.isArray(rawData)) {
+          return
+        }
+
+        const formattedData = rawData.map((item: any) => ({
+          id: item.id || item.id_karya || item.karya_id || item._id, 
+          kategori: item.kategori,
+          nama: item.judul || item.nama,
+          oleh: item.nama_pembuat || item.nama_user || item.nama,
+          banjar: item.asal_banjar || item.asalBanjar || item.banjar,
+          img: item.thumbnail_url || item.foto_url || item.foto || '/placeholder.webp',
+          langkah: item.langkah || [],
+          whatsapp: item.no_wa || item.noWa || ''
+        }))
+        
+        setProduk(formattedData)
+      } catch (error) {
+        console.error(error)
+      }
     }
+
+    getKarya()
   }, [])
 
   const produkFiltered = aktif === 'Semua'
     ? produk
-    : produk.filter(p => p.kategori.toLowerCase() === aktif.toLowerCase())
+    : produk.filter(p => p.kategori?.toLowerCase() === aktif.toLowerCase())
 
   return (
     <div className="min-h-screen bg-[#FFF7E4] flex justify-center">
@@ -80,8 +96,8 @@ export default function Beranda() {
           </div>
         ) : (
           <div className="px-5 grid grid-cols-2 gap-3">
-            {produkFiltered.map(item => (
-              <Link href={"/beranda/" + item.id} key={item.id}>
+            {produkFiltered.map((item, index) => (
+              <Link href={"/beranda/" + item.id} key={item.id || index}>
                 <div className="bg-white rounded-2xl overflow-hidden shadow-xl cursor-pointer active:scale-95 transition-transform">
                   <Image
                     src={item.img}
@@ -107,7 +123,6 @@ export default function Beranda() {
 
       </div>
 
-      {/* Bottom Navbar */}
       <div className="fixed bottom-0 left-0 right-0 bg-[#C04000] flex justify-around items-center py-3">
         <Link href="/beranda" className="flex flex-col items-center gap-1">
           <Image src="/home.webp" alt="home" width={24} height={24} />
@@ -130,7 +145,6 @@ export default function Beranda() {
         </Link>
       </div>
 
-      {/* Modal Tutorial */}
       {showTutorial && (
         <div
           className="fixed inset-0 z-20 flex items-center justify-center px-8"
