@@ -12,9 +12,16 @@ const poppins = Poppins({
 
 const kategori = ['Semua', 'Kayu', 'Perak', 'Tenun', 'Anyaman']
 
+const stepsData = [
+  { icon: '/camera.webp', judul: '1. Foto Karya Anda', desc: 'Ambil foto karya terbaik Anda untuk ditampilkan.' },
+  { icon: '/pencil.webp', judul: '2. Tulis Keterangan', desc: 'Ceritakan proses dan detail karya Anda.' },
+  { icon: '/upload.webp', judul: '3. Unggah Karya Anda', desc: 'Bagikan karya Anda ke seluruh komunitas.' },
+]
+
 export default function Beranda() {
   const [aktif, setAktif] = useState('Semua')
   const [produk, setProduk] = useState<any[]>([])
+  const [showTutorial, setShowTutorial] = useState(false)
 
   useEffect(() => {
     const saved = localStorage.getItem('produk')
@@ -34,7 +41,7 @@ export default function Beranda() {
 
   const produkFiltered = aktif === 'Semua'
     ? produk
-    : produk.filter((p) => p.kategori.toLowerCase() === aktif.toLowerCase())
+    : produk.filter(p => p.kategori.toLowerCase() === aktif.toLowerCase())
 
   return (
     <div className="min-h-screen bg-[#FFF7E4] flex justify-center">
@@ -50,7 +57,7 @@ export default function Beranda() {
             <button className="shrink-0">
               <Image src="/menu.webp" alt="menu" width={24} height={24} />
             </button>
-            {kategori.map((k) => (
+            {kategori.map(k => (
               <button
                 key={k}
                 onClick={() => setAktif(k)}
@@ -73,8 +80,8 @@ export default function Beranda() {
           </div>
         ) : (
           <div className="px-5 grid grid-cols-2 gap-3">
-            {produkFiltered.map((item) => (
-              <Link href={`/beranda/${item.id}`} key={item.id}>
+            {produkFiltered.map(item => (
+              <Link href={"/beranda/" + item.id} key={item.id}>
                 <div className="bg-white rounded-2xl overflow-hidden shadow-xl cursor-pointer active:scale-95 transition-transform">
                   <Image
                     src={item.img}
@@ -100,6 +107,7 @@ export default function Beranda() {
 
       </div>
 
+      {/* Bottom Navbar */}
       <div className="fixed bottom-0 left-0 right-0 bg-[#C04000] flex justify-around items-center py-3">
         <Link href="/beranda" className="flex flex-col items-center gap-1">
           <Image src="/home.webp" alt="home" width={24} height={24} />
@@ -109,15 +117,57 @@ export default function Beranda() {
           <Image src="/upload.webp" alt="unggah" width={24} height={24} />
           <p className="text-white text-[10px]">Unggah</p>
         </Link>
-        <Link href="/tutorial" className="flex flex-col items-center gap-1">
+        <button
+          onClick={() => setShowTutorial(true)}
+          className="flex flex-col items-center gap-1"
+        >
           <Image src="/tutorial.webp" alt="tutorial" width={24} height={24} />
           <p className="text-white text-[10px]">Tutorial</p>
-        </Link>
+        </button>
         <Link href="/profil" className="flex flex-col items-center gap-1">
           <Image src="/profile.webp" alt="profil" width={24} height={24} />
           <p className="text-white text-[10px]">Profil Saya</p>
         </Link>
       </div>
+
+      {/* Modal Tutorial */}
+      {showTutorial && (
+        <div
+          className="fixed inset-0 z-20 flex items-center justify-center px-8"
+          style={{ backdropFilter: 'blur(3px)', background: 'rgba(0,0,0,0.3)' }}
+          onClick={() => setShowTutorial(false)}
+        >
+          <div
+            className="w-full bg-white rounded-3xl px-5 py-6 flex flex-col gap-4"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="bg-[#C04000] rounded-2xl px-4 py-3 flex items-center gap-3">
+              <Image src="/tutorial.webp" alt="tutorial" width={24} height={24} />
+              <p className="text-white font-bold text-base">Cara Menggunakan</p>
+            </div>
+
+            {stepsData.map((l, i) => (
+              <div key={i} className="rounded-2xl px-4 py-4 flex items-start gap-4 border border-[#C04000]/30">
+                <div className="w-10 h-10 bg-[#C04000] rounded-full flex items-center justify-center shrink-0">
+                  <Image src={l.icon} alt={l.judul} width={20} height={20} />
+                </div>
+                <div>
+                  <p className="text-sm font-bold">{l.judul}</p>
+                  <p className="text-xs text-gray-500 mt-1">{l.desc}</p>
+                </div>
+              </div>
+            ))}
+
+            <button
+              onClick={() => setShowTutorial(false)}
+              className="w-full bg-[#C04000] text-white font-bold py-4 rounded-full flex items-center justify-center gap-2"
+            >
+              Saya Mengerti
+              <Image src="/arrow-right.webp" alt="arrow" width={20} height={20} />
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   )
