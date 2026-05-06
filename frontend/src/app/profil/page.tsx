@@ -78,11 +78,24 @@ export default function Profil() {
     setEditMode(false)
   }
 
+  const handleLogout = () => {
+    localStorage.removeItem('userId')
+    router.push('/masuk')
+  }
+
   return (
     <div className="min-h-screen bg-[#FFF7E4] flex justify-center">
       <div className={poppins.className + " w-[360px] min-h-screen flex flex-col pt-8 pb-24 px-5 gap-5"}>
 
-        <h1 className="text-2xl font-bold text-[#C04000]">Profil Saya</h1>
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-[#C04000]">Profil Saya</h1>
+          <button 
+            onClick={handleLogout}
+            className="bg-red-600 text-white text-xs px-4 py-1.5 rounded-full font-medium active:scale-95 transition-transform"
+          >
+            Logout
+          </button>
+        </div>
 
         <div className="bg-white rounded-2xl px-4 py-4 flex items-center gap-4 relative shadow-sm">
           <div

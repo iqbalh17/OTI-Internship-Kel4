@@ -23,7 +23,7 @@ export default function Home() {
             Selamat Datang di
           </h1>
           <h2 className={`${playfair.className} text-4xl font-black italic text-[#C04000] text-shadow-lg mt-2`}>
-            Kicau Mania
+            Kriya Galeri
           </h2>
           <p className={`${poppins.className} text-sm mt-2 text-neutral-900`}>
             Ruang berbagi karya dan ilmu bagi para pengrajin Bali.
