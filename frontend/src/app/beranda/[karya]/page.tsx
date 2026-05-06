@@ -16,8 +16,11 @@ export default function DetailKarya() {
   const { karya } = useParams()
   const router = useRouter()
   const [data, setData] = useState<any>(null)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
   useEffect(() => {
+    setCurrentUserId(localStorage.getItem('userId'))
+
     const getDetailKarya = async () => {
       try {
         const response = await fetchApi(`/karya/detail/${karya}`, 'GET')
@@ -29,6 +32,7 @@ export default function DetailKarya() {
 
         const formattedData = {
           id: detail.id,
+          userId: String(detail.user_id),
           nama: detail.judul,
           oleh: detail.seniman,
           banjar: detail.asal_banjar,
@@ -42,6 +46,8 @@ export default function DetailKarya() {
         }
 
         setData(formattedData)
+        console.log("ID Login di HP:", localStorage.getItem('userId'));
+        console.log("ID Pemilik Karya:", detail.user_id);
       } catch (error) {
         console.error(error)
       }
@@ -52,19 +58,41 @@ export default function DetailKarya() {
     }
   }, [karya])
 
+  const handleDelete = async () => {
+    const isConfirm = window.confirm("Apakah Anda yakin ingin menghapus karya ini?")
+    if (!isConfirm) return
+
+    try {
+      await fetchApi(`/karya/${data.id}`, 'DELETE')
+      router.push('/beranda')
+    } catch (error) {
+      console.error(error)
+      alert("Gagal menghapus karya")
+    }
+  }
+
   if (!data) return null
 
   return (
     <div className="min-h-screen bg-[#FFF7E4] flex justify-center">
       <div className={poppins.className + " w-[360px] min-h-screen flex flex-col pb-24"}>
 
-        <div className="px-5 pt-8 pb-4">
+        <div className="px-5 pt-8 pb-4 flex justify-between items-center">
           <button
             onClick={() => router.back()}
             className="flex items-center gap-2 bg-[#C04000] text-white px-5 py-2 rounded-full font-medium text-sm"
           >
             ← Kembali
           </button>
+
+          {currentUserId === data.userId && (
+            <button
+              onClick={handleDelete}
+              className="flex items-center gap-2 bg-red-600 text-white px-5 py-2 rounded-full font-medium text-sm"
+            >
+              Hapus
+            </button>
+          )}
         </div>
 
         <div className="px-5 mb-3">

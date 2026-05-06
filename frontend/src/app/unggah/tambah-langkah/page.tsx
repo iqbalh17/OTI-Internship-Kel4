@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Poppins } from 'next/font/google'
 import Image from 'next/image'
-import Link from 'next/link'
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -58,8 +57,15 @@ export default function TambahLangkah() {
     setLangkah(updated)
   }
 
+  // Handler untuk menambah langkah baru
   const handleTambah = () => {
     setLangkah([...langkah, { img: null, deskripsi: '', audioUrl: null }])
+  }
+
+  // Handler untuk menghapus satu blok langkah
+  const handleHapusLangkah = (indexToRemove: number) => {
+    const updated = langkah.filter((_, index) => index !== indexToRemove)
+    setLangkah(updated)
   }
 
   const handleSelesai = () => {
@@ -101,7 +107,18 @@ export default function TambahLangkah() {
 
             {/* Kolom Deskripsi dan Voice Note */}
             <div>
-              <p className="text-sm font-bold mb-2 text-black">Langkah {i + 1}</p>
+              <div className="flex justify-between items-center mb-2">
+                <p className="text-sm font-bold text-black">Langkah {i + 1}</p>
+                
+                {/* Tombol Hapus Langkah */}
+                <button
+                  onClick={() => handleHapusLangkah(i)}
+                  className="text-xs font-bold text-red-500 bg-red-100 px-3 py-1 rounded-full hover:bg-red-200"
+                >
+                  Hapus Langkah
+                </button>
+              </div>
+
               <div className="flex flex-col bg-white rounded-2xl px-4 py-3">
                 <div className="flex items-start gap-2">
                   <Image src="/pencil.webp" alt="pencil" width={20} height={20} className="mt-1 shrink-0" />
@@ -124,7 +141,7 @@ export default function TambahLangkah() {
                     id={`audio-step-${i}`}
                     type="file" 
                     accept="audio/*" 
-                    capture // Memicu perekam suara HP
+                    capture="user" // Memicu perekam suara HP
                     className="hidden" 
                     onChange={(e) => handleAudio(e, i)}
                   />
@@ -152,7 +169,7 @@ export default function TambahLangkah() {
 
         <button
           onClick={handleSelesai}
-          className="w-full bg-[#C04000] text-white font-bold py-4 rounded-full"
+          className="w-full bg-[#C04000] text-white font-bold py-4 rounded-full mt-2"
         >
           Selesai
         </button>
