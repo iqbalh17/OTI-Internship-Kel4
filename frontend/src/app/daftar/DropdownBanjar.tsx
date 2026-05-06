@@ -3,11 +3,7 @@
 import Image from 'next/image'
 
 const listBanjar = [
-  'Nama Banjar #1',
-  'Nama Banjar #2',
-  'Nama Banjar #3',
-  'Nama Banjar #4',
-  'Nama Banjar #5',
+  'Banjar Tainsiat','Banjar Gerenceng','Banjar Pekambingan','Banjar Celagigendong','Banjar Umasari', 'Banjar Tegaltamu','Banjar Pagutan','Banjar Sasih','Banjar Tubuh','Banjar Telabah'
 ]
 
 type Props = {
