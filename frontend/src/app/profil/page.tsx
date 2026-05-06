@@ -1,9 +1,11 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { Poppins } from 'next/font/google'
 import Image from 'next/image'
 import Link from 'next/link'
+import { fetchApi } from '../../utils/api'
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -11,29 +13,57 @@ const poppins = Poppins({
 })
 
 export default function Profil() {
+  const router = useRouter()
   const fileRef = useRef<HTMLInputElement>(null)
+  
+  const [myId, setMyId] = useState<string>('')
   const [fotoProfil, setFotoProfil] = useState<string | null>(null)
-  const [nama, setNama] = useState('I Made Widiarta')
-  const [banjar, setBanjar] = useState('Banjar A')
-  const [noHp, setNoHp] = useState('08123456789')
+  const [nama, setNama] = useState('Memuat...')
+  const [banjar, setBanjar] = useState('-')
+  const [noHp, setNoHp] = useState('-')
+  
   const [editMode, setEditMode] = useState(false)
   const [karyaSaya, setKaryaSaya] = useState<any[]>([])
 
   useEffect(() => {
-    const profil = localStorage.getItem('profil')
-    if (profil) {
-      const data = JSON.parse(profil)
-      setNama(data.nama || 'I Made Widiarta')
-      setBanjar(data.banjar || 'Banjar A')
-      setNoHp(data.noHp || '08123456789')
-      setFotoProfil(data.foto || null)
+    const getProfilData = async () => {
+      let currentUserId = localStorage.getItem('userId')
+      
+      if (!currentUserId) {
+        currentUserId = '2'
+      }
+      
+      setMyId(currentUserId)
+
+      try {
+        const response = await fetchApi(`/karya/profile/${currentUserId}`, 'GET')
+        
+        if (response && response.profil) {
+          const p = response.profil
+          setNama(p.nama || 'Tanpa Nama')
+          setBanjar(p.asal_banjar || 'Banjar -')
+          setNoHp(p.no_wa || '-')
+          setFotoProfil(p.foto_url || null)
+
+          if (response.koleksi_karya) {
+            const formattedKarya = response.koleksi_karya.map((item: any) => ({
+              id: item.karya_id,
+              kategori: "Karya",
+              nama: item.judul,
+              oleh: p.nama,
+              banjar: p.asal_banjar,
+              img: item.thumbnail_url || '/placeholder.webp',
+            }))
+            setKaryaSaya(formattedKarya)
+          }
+        }
+      } catch (error) {
+        console.error("Gagal memuat profil:", error)
+        setNama('Gagal memuat data')
+      }
     }
 
-    const produk = localStorage.getItem('produk')
-    if (produk) {
-      const all = JSON.parse(produk)
-      setKaryaSaya(all.filter((p: any) => p.oleh === 'Saya'))
-    }
+    getProfilData()
   }, [])
 
   const handleFoto = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,8 +74,7 @@ export default function Profil() {
     }
   }
 
-  const handleSimpan = () => {
-    localStorage.setItem('profil', JSON.stringify({ nama, banjar, noHp, foto: fotoProfil }))
+  const handleSimpan = async () => {
     setEditMode(false)
   }
 
@@ -55,10 +84,7 @@ export default function Profil() {
 
         <h1 className="text-2xl font-bold text-[#C04000]">Profil Saya</h1>
 
-        {/* Card Profil */}
         <div className="bg-white rounded-2xl px-4 py-4 flex items-center gap-4 relative shadow-sm">
-
-          {/* Foto Profil */}
           <div
             className="w-14 h-14 rounded-full bg-gray-200 overflow-hidden shrink-0 cursor-pointer relative"
             onClick={() => editMode && fileRef.current?.click()}
@@ -73,7 +99,6 @@ export default function Profil() {
           </div>
           <input ref={fileRef} type="file" accept="image/*" onChange={handleFoto} className="hidden" />
 
-          {/* Info */}
           <div className="flex flex-col gap-1 flex-1">
             {editMode ? (
               <>
@@ -97,7 +122,7 @@ export default function Profil() {
               <>
                 <p className="text-sm font-bold text-black">{nama}</p>
                 <div className="flex items-center gap-1">
-                  <Image src="/map.webp" alt="map" width={12} height={12} />
+                  <Image src="/red-map.webp" alt="map" width={12} height={12} />
                   <p className="text-xs text-gray-500">{banjar}</p>
                 </div>
                 <div className="flex items-center gap-1">
@@ -108,7 +133,6 @@ export default function Profil() {
             )}
           </div>
 
-          {/* Tombol Edit / Simpan */}
           {editMode ? (
             <button
               onClick={handleSimpan}
@@ -126,15 +150,14 @@ export default function Profil() {
           )}
         </div>
 
-        {/* Karya Saya */}
         <div>
           <h2 className="text-base font-bold text-[#C04000] mb-3">Karya Saya</h2>
           {karyaSaya.length === 0 ? (
             <p className="text-sm text-gray-400">Belum ada karya yang diunggah.</p>
           ) : (
             <div className="grid grid-cols-2 gap-3">
-              {karyaSaya.map(item => (
-                <Link href={"/beranda/" + item.id} key={item.id}>
+              {karyaSaya.map((item, index) => (
+                <Link href={"/beranda/" + item.id} key={item.id || index}>
                   <div className="bg-white rounded-2xl overflow-hidden shadow-xl cursor-pointer active:scale-95 transition-transform">
                     <Image
                       src={item.img}
@@ -158,11 +181,9 @@ export default function Profil() {
             </div>
           )}
         </div>
-
       </div>
 
-      {/* Bottom Navbar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-[#C04000] flex justify-around items-center py-3">
+      <div className="fixed bottom-0 left-0 right-0 bg-[#C04000] flex justify-around items-center py-3 z-50">
         <Link href="/beranda" className="flex flex-col items-center gap-1">
           <Image src="/home.webp" alt="home" width={24} height={24} />
           <p className="text-white text-[10px]">Beranda</p>
@@ -171,7 +192,7 @@ export default function Profil() {
           <Image src="/upload.webp" alt="unggah" width={24} height={24} />
           <p className="text-white text-[10px]">Unggah</p>
         </Link>
-        <Link href="/beranda" className="flex flex-col items-center gap-1">
+        <Link href="/tutorial" className="flex flex-col items-center gap-1">
           <Image src="/tutorial.webp" alt="tutorial" width={24} height={24} />
           <p className="text-white text-[10px]">Tutorial</p>
         </Link>
@@ -180,7 +201,6 @@ export default function Profil() {
           <p className="text-white text-[10px]">Profil Saya</p>
         </Link>
       </div>
-
     </div>
   )
 }

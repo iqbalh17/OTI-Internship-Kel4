@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Poppins } from 'next/font/google'
 import Image from 'next/image'
@@ -13,7 +13,16 @@ const poppins = Poppins({
 
 export default function TambahLangkah() {
   const router = useRouter()
-  const [langkah, setLangkah] = useState([{ img: null as string | null, deskripsi: '' }])
+  // State langkah dengan img, deskripsi, dan audioUrl
+  const [langkah, setLangkah] = useState([{ img: null as string | null, deskripsi: '', audioUrl: null as string | null }])
+
+  // Muat state yang tersimpan jika user sebelumnya keluar masuk halaman ini
+  useEffect(() => {
+    const saved = localStorage.getItem('langkah_temp')
+    if (saved) {
+      setLangkah(JSON.parse(saved))
+    }
+  }, [])
 
   const handleFoto = (e: React.ChangeEvent<HTMLInputElement>, i: number) => {
     const file = e.target.files?.[0]
@@ -31,8 +40,26 @@ export default function TambahLangkah() {
     setLangkah(updated)
   }
 
+  // Handler untuk Audio Voice Note per langkah
+  const handleAudio = (e: React.ChangeEvent<HTMLInputElement>, i: number) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const url = URL.createObjectURL(file)
+      const updated = [...langkah]
+      updated[i].audioUrl = url
+      setLangkah(updated)
+    }
+  }
+
+  // Handler untuk menghapus Audio
+  const handleHapusAudio = (i: number) => {
+    const updated = [...langkah]
+    updated[i].audioUrl = null
+    setLangkah(updated)
+  }
+
   const handleTambah = () => {
-    setLangkah([...langkah, { img: null, deskripsi: '' }])
+    setLangkah([...langkah, { img: null, deskripsi: '', audioUrl: null }])
   }
 
   const handleSelesai = () => {
@@ -59,9 +86,10 @@ export default function TambahLangkah() {
         {langkah.map((l, i) => (
           <div key={i} className="flex flex-col gap-3">
 
-            <label className="w-full h-44 bg-gray-200 rounded-2xl flex flex-col items-center justify-center cursor-pointer overflow-hidden border border-[#C04000]">
+            {/* Input Foto */}
+            <label className="w-full h-44 bg-gray-200 rounded-2xl flex flex-col items-center justify-center cursor-pointer overflow-hidden border border-[#C04000] relative">
               {l.img ? (
-                <Image src={l.img} alt="langkah" width={320} height={176} className="w-full h-full object-cover" />
+                <Image src={l.img} alt={`langkah ${i}`} fill className="object-cover" />
               ) : (
                 <>
                   <Image src="/camera.webp" alt="camera" width={40} height={40} />
@@ -71,21 +99,54 @@ export default function TambahLangkah() {
               <input type="file" accept="image/*" className="hidden" onChange={(e) => handleFoto(e, i)} />
             </label>
 
+            {/* Kolom Deskripsi dan Voice Note */}
             <div>
               <p className="text-sm font-bold mb-2 text-black">Langkah {i + 1}</p>
-              <div className="flex items-start gap-2 bg-white rounded-2xl px-4 py-3">
-                <Image src="/pencil.webp" alt="pencil" width={20} height={20} className="mt-1 shrink-0" />
-                <textarea
-                  placeholder="Ketik atau tekan tombol mic untuk bicara"
-                  className="bg-transparent text-sm outline-none w-full text-black resize-none h-16"
-                  value={l.deskripsi}
-                  onChange={(e) => handleDeskripsi(e.target.value, i)}
-                />
-                <button className="shrink-0">
-                  <Image src="/mic.webp" alt="mic" width={32} height={32} />
-                </button>
+              <div className="flex flex-col bg-white rounded-2xl px-4 py-3">
+                <div className="flex items-start gap-2">
+                  <Image src="/pencil.webp" alt="pencil" width={20} height={20} className="mt-1 shrink-0" />
+                  <textarea
+                    placeholder="Ketik atau tekan tombol mic untuk bicara"
+                    className="bg-transparent text-sm outline-none w-full text-black resize-none h-16"
+                    value={l.deskripsi}
+                    onChange={(e) => handleDeskripsi(e.target.value, i)}
+                  />
+                  
+                  {/* Tombol Mic dibungkus label agar memicu input file di bawahnya */}
+                  <label 
+                    htmlFor={`audio-step-${i}`} 
+                    className={`shrink-0 cursor-pointer p-1 ${l.audioUrl ? 'bg-green-100 rounded-full' : ''}`}
+                  >
+                    <Image src="/mic.webp" alt="mic" width={32} height={32} />
+                  </label>
+                  
+                  <input 
+                    id={`audio-step-${i}`}
+                    type="file" 
+                    accept="audio/*" 
+                    capture // Memicu perekam suara HP
+                    className="hidden" 
+                    onChange={(e) => handleAudio(e, i)}
+                  />
+                </div>
+
+                {/* Preview Voice Note */}
+                {l.audioUrl && (
+                  <div className="mt-3 w-full border-t border-gray-100 pt-3">
+                    <p className="text-xs text-gray-500 mb-1">Voice Note terlampir:</p>
+                    <audio controls src={l.audioUrl} className="w-full h-8 outline-none" />
+                    <button 
+                      type="button" 
+                      onClick={() => handleHapusAudio(i)} 
+                      className="text-xs text-red-500 mt-2 font-medium"
+                    >
+                      Hapus Voice Note
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
+            
           </div>
         ))}
 
@@ -103,25 +164,6 @@ export default function TambahLangkah() {
           Tambahkan Langkah Selanjutnya
           <Image src="/plus.webp" alt="plus" width={20} height={20} />
         </button>
-
-        <div className="fixed bottom-0 left-0 right-0 bg-[#C04000] flex justify-around items-center py-3">
-          <Link href="/beranda" className="flex flex-col items-center gap-1">
-            <Image src="/home.webp" alt="home" width={24} height={24} />
-            <p className="text-white text-[10px]">Beranda</p>
-          </Link>
-          <Link href="/unggah" className="flex flex-col items-center gap-1">
-            <Image src="/upload.webp" alt="unggah" width={24} height={24} />
-            <p className="text-white text-[10px]">Unggah</p>
-          </Link>
-          <Link href="/tutorial" className="flex flex-col items-center gap-1">
-            <Image src="/tutorial.webp" alt="tutorial" width={24} height={24} />
-            <p className="text-white text-[10px]">Tutorial</p>
-          </Link>
-          <Link href="/profil" className="flex flex-col items-center gap-1">
-            <Image src="/profile.webp" alt="profil" width={24} height={24} />
-            <p className="text-white text-[10px]">Profil Saya</p>
-          </Link>
-        </div>
 
       </div>
     </div>
