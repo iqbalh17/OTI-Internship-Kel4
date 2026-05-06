@@ -98,11 +98,11 @@ export default function DetailKarya() {
         <div className="px-5 mb-3">
           <h1 className="text-2xl font-bold text-[#C04000]">{data.nama}</h1>
           <p className="text-sm text-gray-500 mt-1">Karya Oleh</p>
-        </div>
+        </div>  
 
         <div className="mx-5 bg-white rounded-2xl px-4 py-3 flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden shrink-0">
-            <Image src="/placeholder.webp" alt="avatar" width={40} height={40} className="object-cover" />
+          <div className="rounded-full bg-gray-200 overflow-hidden shrink-0">
+            <Image src="/profile.webp" alt="profil" width={32} height={32} />
           </div>
           <div>
             <p className="text-sm font-bold text-black">{data.oleh}</p>
