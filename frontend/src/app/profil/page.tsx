@@ -12,9 +12,16 @@ const poppins = Poppins({
   weight: ['400', '500', '700'],
 })
 
+const stepsData = [
+  { icon: '/camera.webp', judul: '1. Foto Karya Anda', desc: 'Ambil foto karya terbaik Anda untuk ditampilkan.' },
+  { icon: '/pencil.webp', judul: '2. Tulis Keterangan', desc: 'Ceritakan proses dan detail karya Anda.' },
+  { icon: '/upload.webp', judul: '3. Unggah Karya Anda', desc: 'Bagikan karya Anda ke seluruh komunitas.' },
+]
+
 export default function Profil() {
   const router = useRouter()
   const fileRef = useRef<HTMLInputElement>(null)
+  const [showTutorial, setShowTutorial] = useState(false)
   
   const [myId, setMyId] = useState<string>('')
   const [fotoProfil, setFotoProfil] = useState<string | null>(null)
@@ -205,15 +212,56 @@ export default function Profil() {
           <Image src="/upload.webp" alt="unggah" width={24} height={24} />
           <p className="text-white text-[10px]">Unggah</p>
         </Link>
-        <Link href="/tutorial" className="flex flex-col items-center gap-1">
-          <Image src="/tutorial.webp" alt="tutorial" width={24} height={24} />
-          <p className="text-white text-[10px]">Tutorial</p>
-        </Link>
+        <button
+                  onClick={() => setShowTutorial(true)}
+                  className="flex flex-col items-center gap-1"
+                >
+                  <Image src="/tutorial.webp" alt="tutorial" width={24} height={24} />
+                  <p className="text-white text-[10px]">Tutorial</p>
+                </button>
         <Link href="/profil" className="flex flex-col items-center gap-1">
           <Image src="/profile.webp" alt="profil" width={24} height={24} />
           <p className="text-white text-[10px]">Profil Saya</p>
         </Link>
       </div>
+
+      {showTutorial && (
+        <div
+          className="fixed inset-0 z-20 flex items-center justify-center px-8"
+          style={{ backdropFilter: 'blur(3px)', background: 'rgba(0,0,0,0.3)' }}
+          onClick={() => setShowTutorial(false)}
+        >
+          <div
+            className="w-full bg-white rounded-3xl px-5 py-6 flex flex-col gap-4"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="bg-[#C04000] rounded-2xl px-4 py-3 flex items-center gap-3">
+              <Image src="/tutorial.webp" alt="tutorial" width={24} height={24} />
+              <p className="text-white font-bold text-base">Cara Menggunakan</p>
+            </div>
+
+            {stepsData.map((l, i) => (
+              <div key={i} className="rounded-2xl px-4 py-4 flex items-start gap-4 border border-[#C04000]/30">
+                <div className="w-10 h-10 bg-[#C04000] rounded-full flex items-center justify-center shrink-0">
+                  <Image src={l.icon} alt={l.judul} width={20} height={20} />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-black">{l.judul}</p>
+                  <p className="text-xs text-gray-500 mt-1">{l.desc}</p>
+                </div>
+              </div>
+            ))}
+
+            <button
+              onClick={() => setShowTutorial(false)}
+              className="w-full bg-[#C04000] text-white font-bold py-4 rounded-full flex items-center justify-center gap-2"
+            >
+              Saya Mengerti
+              <Image src="/arrow-right.webp" alt="arrow" width={20} height={20} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
