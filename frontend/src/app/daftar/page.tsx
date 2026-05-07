@@ -42,8 +42,7 @@ export default function DaftarAkun() {
         asalBanjar: selectedBanjar,
         password: password
       })
-
-      alert('Pendaftaran berhasil! Silakan masuk dengan akun Anda.')
+ 
       router.push('/masuk')
 
     } catch (error: any) {
