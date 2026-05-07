@@ -39,7 +39,7 @@ export default function Masuk() {
       localStorage.setItem('token', response.token)
       localStorage.setItem('userId', response.user.id)
 
-      alert('Berhasil masuk!')
+      
       router.push('/beranda')
 
     } catch (error: any) {
